@@ -1,5 +1,7 @@
 #include "route_planner.h"
 #include <algorithm>
+using std::sort;
+using std::reverse;
 
 RoutePlanner::RoutePlanner(RouteModel &model, float start_x, float start_y, float end_x, float end_y): m_Model(model) {
     // Convert inputs to percentage:
@@ -53,9 +55,16 @@ void RoutePlanner::AddNeighbors(RouteModel::Node *current_node) {
 // - Create a pointer to the node in the list with the lowest sum.
 // - Remove that node from the open_list.
 // - Return the pointer.
-
+static bool Compare(RouteModel::Node n1, RouteModel::Node n2){
+    float f1 = n1.g_value + n1.h_value;
+    float f2 = n2.g_value + n2.h_value;
+    return f1>f2;
+}
 RouteModel::Node *RoutePlanner::NextNode() {
-
+    sort(*(open_list.begin()), *(open_list.end()), Compare);
+    auto next_node = open_list.back();
+    open_list.pop_back();
+    return next_node;
 }
 
 
@@ -73,6 +82,17 @@ std::vector<RouteModel::Node> RoutePlanner::ConstructFinalPath(RouteModel::Node 
     std::vector<RouteModel::Node> path_found;
 
     // TODO: Implement your solution here.
+    while(current_node != start_node){
+        path_found.push_back(*current_node);
+        distance += current_node->h_value;
+
+        current_node = current_node->parent;
+    }
+    //adding the stating node
+    path_found.push_back(*current_node);
+    distance += current_node->h_value;
+    //reverse the vector to have the stating node at first
+    reverse(path_found.begin(),path_found.end());
 
     distance *= m_Model.MetricScale(); // Multiply the distance by the scale of the map to get meters.
     return path_found;
@@ -91,5 +111,11 @@ void RoutePlanner::AStarSearch() {
     RouteModel::Node *current_node = nullptr;
 
     // TODO: Implement your solution here.
-
+    current_node = start_node;
+    while(open_list.size() > 0){
+        if(current_node == end_node) break;
+        this->AddNeighbors(current_node);
+        current_node = this->NextNode();
+    }
+    m_Model.path = this->ConstructFinalPath(end_node);
 }
