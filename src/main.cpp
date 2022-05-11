@@ -57,15 +57,23 @@ int main(int argc, const char **argv)
     // TODO 1: Declare floats `start_x`, `start_y`, `end_x`, and `end_y` and get
     // user input for these values using std::cin. Pass the user input to the
     // RoutePlanner object below in place of 10, 10, 90, 90.
-    float x1, y1, x2, y2;
-    cout << "enter the stating x,y point and goal x,y point: ";
-    cin >> x1 >> y1 >> x2 >> y2;
+    float start_x, start_y, end_x, end_y;
+    while(1){
+        cout << "enter the stating x,y point and goal x,y point: ";
+        cin >> start_x>> start_y>> end_x>> end_y;
+        if( ((start_x <0) || (start_x >100)) || ((start_y <0) || (start_y >100)) ||
+        ((end_x <0) || (end_x >100)) || ((end_y <0) || (end_y >100)) ){
+            cout << "at least one of the entries is less than 0 or more than 100\n";
+        }else{
+            break;
+        }
+    }
 
     // Build Model.
     RouteModel model{osm_data};
 
     // Create RoutePlanner object and perform A* search.
-    RoutePlanner route_planner{model, x1, y1, x2, y2};//{model, 10, 10, 90, 90};
+    RoutePlanner route_planner{model, start_x, start_y, end_x, end_y};
     route_planner.AStarSearch();
 
     std::cout << "Distance: " << route_planner.GetDistance() << " meters. \n";
